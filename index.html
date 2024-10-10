@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
+</head>
+<body>
+  <div id="vis"/>
+  <script>
+    const spec = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Households",
+  "params": [
+    {
+      "name": "Select_Year",
+      "value": 1990,
+      "bind": {
+        "input": "range",
+        "min": 1990,
+        "max": 2021,
+        "step": 1,
+        "name": "Year: "
+      }
+    },
+    {
+      "name": "State_Selection",
+      "value": "None",
+      "bind": {
+        "input": "select",
+        "options": [
+          "None",
+          "Johor",
+          "Kedah",
+          "Kelantan",
+          "Melaka",
+          "Negeri Sembilan",
+          "Pahang",
+          "Perak",
+          "Perlis",
+          "Pulau Pinang",
+          "Sabah",
+          "Sarawak",
+          "Selangor",
+          "Terengganu",
+          "W.P. Kuala Lumpur",
+          "W.P. Labuan",
+          "W.P. Putrajaya"
+        ],
+        "labels": ["Show All"],
+        "name": "State: "
+      }
+    }
+  ],
+  "vconcat": [
+    {
+      "title": "Worldwide Gross National Income",
+      "width": 800,
+      "height": 400,
+      "projection": {"type": "equalEarth"},
+      "data": {
+        "url": "https://raw.githubusercontent.com/FIT3179/Vega-Lite/main/3_choropleth_map/js/ne_110m_admin_0_countries.topojson",
+        "format": {"type": "topojson", "feature": "ne_110m_admin_0_countries"}
+      },
+      "transform": [
+        {
+          "lookup": "properties.NAME",
+          "from": {
+            "data": {
+              "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/GNI_year_test.csv"
+            },
+            "key": "Country",
+            "fields": ["Year", "Gross National Income"]
+          }
+        },
+        {"filter": "datum.Year == '2021'"}
+      ],
+      "mark": {"type": "geoshape"},
+      "encoding": {
+        "color": {"field": "Gross National Income", "type": "quantitative"},
+        "tooltip": [
+          {"field": "properties.NAME", "type": "nominal", "title": "Country"},
+          {"field": "Gross National Income", "type": "quantitative"}
+        ]
+      }
+    },
+    {
+      "hconcat": [
+        {
+          "title": "Mean Household Income Of Malaysia",
+          "width": 400,
+          "height": 200,
+          "data": {
+            "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/hh_income.csv"
+          },
+          "transform": [{"filter": "year(datum.date) > Select_Year"}],
+          "selection": {
+            "date_filter": {
+              "type": "interval",
+              "field": "date",
+              "encodings": ["x"]
+            }
+          },
+          "mark": "line",
+          "encoding": {
+            "x": {"field": "date", "type": "temporal", "title": "Date"},
+            "y": {
+              "field": "income_mean",
+              "type": "quantitative",
+              "title": "Income Mean"
+            },
+            "tooltip": [
+              {"field": "date", "type": "temporal", "title": "Year"},
+              {
+                "field": "income_mean",
+                "type": "quantitative",
+                "title": "Income Mean"
+              },
+              {
+                "field": "income_median",
+                "type": "quantitative",
+                "title": "Income Median"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Expenses in Malaysia",
+          "width": 400,
+          "height": 200,
+          "data": {
+            "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/hies_state.csv"
+          },
+          "mark": {"type": "bar"},
+          "encoding": {
+            "x": {"field": "state", "type": "nominal", "title": "State"},
+            "y": {
+              "field": "expenditure_mean",
+              "type": "quantitative",
+              "title": "Expenses"
+            },
+            "color": {"field": "state", "type": "nominal", "title": "State"},
+            "tooltip": [
+              {"field": "date", "type": "temporal", "title": "Year"},
+              {"field": "expenses", "type": "quantitative", "title": "Expenses"}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "hconcat": [
+        {
+          "title": "Poverty in Malaysia",
+          "width": 400,
+          "height": 200,
+          "data": {
+            "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/hh_poverty_state.csv"
+          },
+          "transform": [
+            {
+              "filter": "State_Selection == 'None' || datum.state == State_Selection"
+            }
+          ],
+          "mark": {"type": "line", "point": {"filled": false, "fill": "white"}},
+          "encoding": {
+            "x": {"field": "date", "type": "temporal", "title": "Date"},
+            "y": {
+              "field": "poverty_absolute",
+              "type": "quantitative",
+              "title": "Poverty Rate"
+            },
+            "color": {"field": "state", "type": "nominal", "title": "State"},
+            "tooltip": [
+              {"field": "date", "type": "temporal", "title": "Year"},
+              {
+                "field": "poverty_absolute",
+                "type": "quantitative",
+                "title": "Poverty Rate"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Mean Household Income in Each State",
+          "width": 400,
+          "height": 200,
+          "data": {
+            "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/hh_income_district_state2.csv"
+          },
+          "transform": [
+            {
+              "filter": "State_Selection == 'None' || datum.state == State_Selection"
+            },
+            {
+              "filter": "datum.deep_dive == (State_Selection == 'None' ? 'Yes' : 'No')"
+            }
+          ],
+          "mark": {"type": "line", "point": {"filled": true}},
+          "encoding": {
+            "x": {
+              "field": "district",
+              "type": "nominal",
+              "title": "State",
+              "sort": {"field": "income_mean", "order": "descending"}
+            },
+            "y": {
+              "field": "income_mean",
+              "type": "quantitative",
+              "title": "Income Mean"
+            },
+            "color": {"field": "district", "type": "nominal", "title": "State"},
+            "tooltip": [
+              {"field": "date", "type": "temporal", "title": "Year"},
+              {
+                "field": "income_mean",
+                "type": "quantitative",
+                "title": "Income Mean"
+              },
+              {
+                "field": "income_median",
+                "type": "quantitative",
+                "title": "Income Median"
+              },
+              {"field": "state", "type": "nominal", "title": "State"}
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "config": {}
+};
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+  </script>
+</body>
+</html>
