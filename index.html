@@ -10,7 +10,14 @@
   <script>
     const spec = {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "title": "Households",
+  "title": {
+    "text": "Household Income, Poverty Rate and Expenses in Malaysia",
+    "orient": "top",
+    "anchor": "middle",
+    "font": "Serif",
+    "fontSize": 25,
+    "offset": 50
+  },
   "params": [
     {
       "name": "Select_Year",
@@ -43,9 +50,7 @@
           "Sarawak",
           "Selangor",
           "Terengganu",
-          "W.P. Kuala Lumpur",
-          "W.P. Labuan",
-          "W.P. Putrajaya"
+          "W.P."
         ],
         "labels": ["Show All"],
         "name": "State: "
@@ -178,7 +183,7 @@
           },
           "transform": [
             {
-              "filter": "State_Selection == 'None' || datum.state == State_Selection"
+              "filter": "State_Selection == 'None' || indexof(datum.state, State_Selection) >= 0"
             },
             {"filter": "year(datum.date) > Select_Year"}
           ],
@@ -211,7 +216,7 @@
           },
           "transform": [
             {
-              "filter": "State_Selection == 'None' || datum.state == State_Selection"
+              "filter": "State_Selection == 'None' || indexof(datum.state, State_Selection) >= 0"
             },
             {
               "filter": "datum.deep_dive == (State_Selection == 'None' ? 'Yes' : 'No')"
