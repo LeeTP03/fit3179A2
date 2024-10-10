@@ -14,11 +14,11 @@
   "params": [
     {
       "name": "Select_Year",
-      "value": 1990,
+      "value": 1970,
       "bind": {
         "input": "range",
-        "min": 1990,
-        "max": 2021,
+        "min": 1970,
+        "max": 2019,
         "step": 1,
         "name": "Year: "
       }
@@ -59,7 +59,7 @@
       "height": 400,
       "projection": {"type": "equalEarth"},
       "data": {
-        "url": "https://raw.githubusercontent.com/FIT3179/Vega-Lite/main/3_choropleth_map/js/ne_110m_admin_0_countries.topojson",
+        "url": "https://raw.githubusercontent.com/LeeTP03/fit3179/refs/heads/main/ne_110m.topojson",
         "format": {"type": "topojson", "feature": "ne_110m_admin_0_countries"}
       },
       "transform": [
@@ -77,7 +77,26 @@
       ],
       "mark": {"type": "geoshape"},
       "encoding": {
-        "color": {"field": "Gross National Income", "type": "quantitative"},
+        "color": {
+          "field": "Gross National Income",
+          "type": "quantitative",
+          "scale": {
+            "type": "quantize",
+            "range": [
+              "#d73027",
+              "#fc8d59",
+              "#fee08b",
+              "#ffffbf",
+              "#d9ef8b",
+              "#a6d96a",
+              "#66bd63",
+              "#1a9850",
+              "#006837",
+              "#004529",
+              "#003300"
+            ]
+          }
+        },
         "tooltip": [
           {"field": "properties.NAME", "type": "nominal", "title": "Country"},
           {"field": "Gross National Income", "type": "quantitative"}
@@ -160,7 +179,8 @@
           "transform": [
             {
               "filter": "State_Selection == 'None' || datum.state == State_Selection"
-            }
+            },
+            {"filter": "year(datum.date) > Select_Year"}
           ],
           "mark": {"type": "line", "point": {"filled": false, "fill": "white"}},
           "encoding": {
@@ -177,7 +197,8 @@
                 "field": "poverty_absolute",
                 "type": "quantitative",
                 "title": "Poverty Rate"
-              }
+              },
+              {"field": "state", "type": "nominal", "title": "State"}
             ]
           }
         },
